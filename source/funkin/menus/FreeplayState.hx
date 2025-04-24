@@ -2,6 +2,7 @@ package funkin.menus;
 
 import funkin.backend.chart.Chart;
 import funkin.backend.chart.ChartData.ChartMetaData;
+import funkin.backend.system.Conductor;
 import haxe.io.Path;
 import openfl.text.TextField;
 import flixel.text.FlxText;
@@ -140,6 +141,8 @@ class FreeplayState extends MusicBeatState
 
 			var icon:HealthIcon = new HealthIcon(songs[i].icon);
 			icon.sprTracker = songText;
+			icon.setUnstretchedGraphicSize(150, 150, true);
+			icon.updateHitbox();
 
 			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
@@ -216,7 +219,7 @@ class FreeplayState extends MusicBeatState
 			lerpScore = intendedScore;
 
 		if (canSelect) {
-			changeSelection((controls.UP_P ? -1 : 0) + (controls.DOWN_P ? 1 : 0));
+			changeSelection((controls.UP_P ? -1 : 0) + (controls.DOWN_P ? 1 : 0) - FlxG.mouse.wheel);
 			changeDiff((controls.LEFT_P ? -1 : 0) + (controls.RIGHT_P ? 1 : 0));
 			changeCoopMode((FlxG.keys.justPressed.TAB ? 1 : 0));
 			// putting it before so that its actually smooth
@@ -239,7 +242,11 @@ class FreeplayState extends MusicBeatState
 		autoplayElapsed += elapsed;
 		if (!disableAutoPlay && !songInstPlaying && (autoplayElapsed > timeUntilAutoplay || FlxG.keys.justPressed.SPACE)) {
 			if (curPlayingInst != (curPlayingInst = Paths.inst(songs[curSelected].name, songs[curSelected].difficulties[curDifficulty]))) {
-				var huh:Void->Void = function() FlxG.sound.playMusic(curPlayingInst, 0);
+				var huh:Void->Void = function()
+				{
+					FlxG.sound.playMusic(curPlayingInst, 0);
+					Conductor.changeBPM(songs[curSelected].bpm, songs[curSelected].beatsPerMeasure, songs[curSelected].stepsPerBeat);
+				}
 				if(!disableAsyncLoading) Main.execAsync(huh);
 				else huh();
 			}

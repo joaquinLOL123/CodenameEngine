@@ -22,9 +22,9 @@ enum abstract XMLAnimType(Int)
 	var BEAT = 1;
 	var LOOP = 2;
 
-	public static function fromString(str:String, def:XMLAnimType = NONE)
+	public static function fromString(str:String, def:XMLAnimType = XMLAnimType.NONE)
 	{
-		return switch (str.trim().toLowerCase())
+		return switch (StringTools.trim(str).toLowerCase())
 		{
 			case "none": NONE;
 			case "beat" | "onbeat": BEAT;
@@ -72,24 +72,34 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 		moves = false;
 	}
 
-	public static function copyFrom(source:FunkinSprite)
+	/**
+	 * Gets the graphics and copies other properties from another sprite (Works both for `FlxSprite` and `FunkinSprite`!).
+	 */
+	public static function copyFrom(source:FlxSprite):FunkinSprite
 	{
 		var spr = new FunkinSprite();
+		var casted:FunkinSprite = null;
+		if (source is FunkinSprite)
+			casted = cast source;
+
 		@:privateAccess {
 			spr.setPosition(source.x, source.y);
 			spr.frames = source.frames;
-			if (source.animateAtlas != null && source.atlasPath != null)
-				spr.loadSprite(source.atlasPath);
+			if (casted != null && casted.animateAtlas != null && casted.atlasPath != null)
+				spr.loadSprite(casted.atlasPath);
 			spr.animation.copyFrom(source.animation);
 			spr.visible = source.visible;
 			spr.alpha = source.alpha;
 			spr.antialiasing = source.antialiasing;
 			spr.scale.set(source.scale.x, source.scale.y);
 			spr.scrollFactor.set(source.scrollFactor.x, source.scrollFactor.y);
-			spr.skew.set(source.skew.x, source.skew.y);
-			spr.transformMatrix = source.transformMatrix;
-			spr.matrixExposed = source.matrixExposed;
-			spr.animOffsets = source.animOffsets.copy();
+
+			if (casted != null) {
+				spr.skew.set(casted.skew.x, casted.skew.y);
+				spr.transformMatrix = casted.transformMatrix;
+				spr.matrixExposed = casted.matrixExposed;
+				spr.animOffsets = casted.animOffsets.copy();
+			}
 		}
 		return spr;
 	}
@@ -328,7 +338,31 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 		lastAnimContext = Context;
 	}
 
-	public function getAnim(name:String):OneOfTwo<FlxAnimation, FlxSymbolAnimation> {
+	public inline function addAnim(name:String, prefix:String, frameRate:Float = 24, ?looped:Bool, ?forced:Bool, ?indices:Array<Int>, x:Float = 0, y:Float = 0, animType:XMLAnimType = NONE)
+	{
+		return XMLUtil.addAnimToSprite(this, {
+			name: name,
+			anim: prefix,
+			fps: frameRate,
+			loop: looped == null ? animType == LOOP : looped,
+			animType: animType,
+			x: x,
+			y: y,
+			indices: indices,
+			forced: forced
+		});
+	}
+
+	public inline function removeAnim(name:String)
+	{
+		if (animateAtlas != null)
+			@:privateAccess animateAtlas.anim.animsMap.remove(name);
+		else
+			animation.remove(name);
+	}
+
+	public function getAnim(name:String):OneOfTwo<FlxAnimation, FlxSymbolAnimation>
+	{
 		if(animateAtlas != null)
 			return animateAtlas.anim.getByName(name);
 		return animation.getByName(name);
@@ -341,7 +375,7 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 		return FlxPoint.weak(0, 0);
 	}
 
-	public inline function hasAnimation(AnimName:String):Bool @:privateAccess
+	public inline function hasAnim(AnimName:String):Bool @:privateAccess
 		return animateAtlas != null ? (animateAtlas.anim.animsMap.exists(AnimName)
 			|| animateAtlas.anim.symbolDictionary.exists(AnimName)) : animation.exists(AnimName);
 
@@ -364,13 +398,6 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 		return animateAtlas != null ? animateAtlas.anim.reversed : animation.curAnim != null ? animation.curAnim.reversed : false;
 	}
 
-	public inline function removeAnimation(name:String) {
-		if (animateAtlas != null)
-			@:privateAccess animateAtlas.anim.animsMap.remove(name);
-		else
-			animation.remove(name);
-	}
-
 	public inline function getNameList():Array<String> {
 		if (animateAtlas != null)
 			return [for (name in @:privateAccess animateAtlas.anim.animsMap.keys()) name];
@@ -378,7 +405,8 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 			return animation.getNameList();
 	}
 
-	public inline function stopAnimation() {
+	public inline function stopAnim()
+	{
 		if (animateAtlas != null)
 			animateAtlas.anim.pause();
 		else
@@ -393,6 +421,11 @@ class FunkinSprite extends FlxSkewedSprite implements IBeatReceiver implements I
 	public inline function isAnimAtEnd() {
 		return animateAtlas != null ? animateAtlas.anim.isAtEnd : (animation.curAnim != null ? animation.curAnim.isAtEnd : false);
 	}
+
+	// Backwards compat (the names used to be all different and it sucked, please lets use the same format in the future)  - Nex
+	public inline function hasAnimation(AnimName:String) return hasAnim(AnimName);
+	public inline function removeAnimation(name:String) return removeAnim(name);
+	public inline function stopAnimation() return stopAnim();
 	#end
 
 	// Getter / Setters
