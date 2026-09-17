@@ -3,8 +3,6 @@ package funkin.options.keybinds;
 import funkin.backend.assets.ModsFolder;
 import flixel.util.FlxColor;
 import haxe.xml.Access;
-import sys.io.File;
-import sys.FileSystem;
 using StringTools;
 
 
@@ -309,7 +307,7 @@ class KeybindsOptions extends MusicBeatSubstate {
 			alphabet.p2Selected = p2Selected;
 			alphabet.alpha = 1;
 			var minH = FlxG.height / 2;
-			var maxH = alphabets.members[alphabets.length-1].y + alphabets.members[alphabets.length-1].height - (FlxG.height / 2) + 35;
+			var maxH = alphabets.members[alphabets.length-1].y + alphabets.members[alphabets.length-1].height - (FlxG.height / 2) + 75;
 			if (minH < maxH)
 				camFollow.setPosition(FlxG.width / 2, CoolUtil.bound(alphabet.y + (alphabet.height / 2), minH, maxH));
 			else
@@ -324,12 +322,12 @@ class KeybindsOptions extends MusicBeatSubstate {
 		for (lib in ModsFolder.getLoadedModsLibs()) {
 			var modName = lib.modName;
 			var folder = Paths.xml('config/controls/LIB_$modName');
-			Logs.trace(folder);
+			//Logs.trace(folder);
 			if (Assets.exists(folder)) filePaths.push(folder);
 		}
 
-		Logs.trace("Found " + filePaths.length + " custom controls");
-		for(i in filePaths) Logs.trace(i);
+		//Logs.trace("Found " + filePaths.length + " custom controls");
+		//for(i in filePaths) Logs.trace(i);
 
 		var xmlPath = Paths.xml("config/controls");
 		for(source in filePaths) {
