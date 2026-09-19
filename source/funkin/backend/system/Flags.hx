@@ -47,6 +47,9 @@ class Flags {
 	@:lazy public static var SAVE_PATH:String = haxe.macro.Compiler.getDefine("SAVE_PATH");
 	@:lazy public static var SAVE_NAME:String = haxe.macro.Compiler.getDefine("SAVE_NAME");
 
+	@:lazy public static var SAVE_OPTIONS_PATH:String = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_PATH");
+	@:lazy public static var SAVE_OPTIONS_NAME:String = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_NAME");
+
 	public static var COMMIT_NUMBER:Int = GitCommitMacro.commitNumber;
 	public static var COMMIT_HASH:String = GitCommitMacro.commitHash;
 	public static var COMMIT_MESSAGE:String = 'Commit $COMMIT_NUMBER ($COMMIT_HASH)';
