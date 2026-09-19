@@ -253,7 +253,7 @@ class Options
 	public static var SOLO_DEV_INSPECTOR(get, null):Array<FlxKey>;
 
 	public static function load() {
-		var path = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_PATH"), name = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_NAME");
+		var path = Flags.SAVE_OPTIONS_PATH, name = Flags.SAVE_OPTIONS_NAME;
 		if (path == null) path = 'CodenameEngine';
 		if (name == null) name = 'options';
 
